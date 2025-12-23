@@ -39,7 +39,8 @@ body::after{
   /* A diagonal gradient with semi-transparent white stops creates the shimmer */
   background: linear-gradient(45deg, rgba(255,255,255,0.0) 0%, rgba(255,255,255,0.4) 50%, rgba(255,255,255,0.0) 100%);
   mix-blend-mode: overlay;
-  opacity: 0.4;
+  /* Increase opacity slightly so the shimmer is visible on lighter backgrounds */
+  opacity: 0.5;
   background-size: 200% 200%;
   animation: shimmer 5s linear infinite;
   z-index: 2;
@@ -180,12 +181,14 @@ body::after{
   /* Preserve aspect ratio and prevent cropping. Images will scale to the
      width of the polaroid wrapper. For rotated images, dimensions are
      set inline via JS to avoid white gaps. */
+  position: absolute;
+  top: 0;
+  left: 0;
   width: 100%;
   height: 100%;
-  /* Ensure images always fill the wrapper completely. Both width and
-     height are set to 100% so they scale uniformly to the fixed
-     wrapper height. object-fit: cover crops edges if necessary to
-     preserve aspect ratio while filling the space. */
+  /* Ensure images always fill the wrapper completely. object-fit: cover
+     crops edges if necessary to preserve aspect ratio while filling
+     the space. */
   object-fit: cover;
   border-radius: 14px;
   display: block;
@@ -214,13 +217,20 @@ body::after{
  * fixed height removes the need for dynamically adjusting the wrapper
  * size in JavaScript, which previously led to inconsistent paddings.
  */
+/*
+ * The wrapper defines a consistent aspect ratio for the photo area.
+ * We use aspect-ratio to maintain a vertical polaroid frame (3:4).
+ * This makes the card responsive — as the width changes on smaller
+ * screens, the height adjusts automatically. Overflow is hidden so
+ * rotated and scaled images do not bleed beyond the rounded corners.
+ */
 .polaroid-img-wrapper{
+  position: relative;
   width: 100%;
-  height: 240px;
-  max-width: 100%;
+  /* 3:4 aspect ratio (width : height) for vertical polaroid frame */
+  aspect-ratio: 3 / 4;
   border-radius: 14px;
   overflow: hidden;
-  position: relative;
 }
 
 /* When a polaroid enters the viewport, fade it in and apply its

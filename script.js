@@ -211,14 +211,16 @@
             for (const code of rotate270List) {
               if (file.name.toLowerCase().includes(code)) {
                 rotateOverride = true;
-                // Rotate 270° (−90°) and scale to fill the wrapper height. Width
-                // is set to auto and height to 100% so the image fits
-                // vertically without overflowing, and maxWidth is unset so
-                // horizontal scaling is governed by height and rotation.
+                // Rotate 270° (−90°) and scale to fill the wrapper. We set both
+                // width and height to 100% so the image covers the wrapper
+                // entirely, avoiding blank space on the right. object-fit: cover
+                // crops the image edges as necessary while preserving the
+                // overall composition. maxWidth is not needed when width
+                // explicitly fills the container.
                 img.style.transform = 'rotate(-90deg)';
-                img.style.width = 'auto';
+                img.style.width = '100%';
                 img.style.height = '100%';
-                img.style.maxWidth = 'none';
+                img.style.objectFit = 'cover';
                 break;
               }
             }
@@ -230,20 +232,20 @@
             if (!rotateOverride) {
               getOrientation(file.download_url).then((orientation) => {
                 // Save the orientation value on the image element for later
-                // sizing logic in the load handler. This avoids race
-                // conditions where the load event fires before the
-                // orientation has been determined.
                 img.dataset.orientation = orientation;
+                // Apply rotation styles based on EXIF orientation. As with
+                // manual overrides, we set both width and height to 100%
+                // and rely on object-fit: cover to avoid blank space.
                 if (orientation === 6) {
                   img.style.transform = 'rotate(90deg)';
-                  img.style.width = 'auto';
+                  img.style.width = '100%';
                   img.style.height = '100%';
-                  img.style.maxWidth = 'none';
+                  img.style.objectFit = 'cover';
                 } else if (orientation === 8) {
                   img.style.transform = 'rotate(-90deg)';
-                  img.style.width = 'auto';
+                  img.style.width = '100%';
                   img.style.height = '100%';
-                  img.style.maxWidth = 'none';
+                  img.style.objectFit = 'cover';
                 } else if (orientation === 3) {
                   img.style.transform = 'rotate(180deg)';
                 }
