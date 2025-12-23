@@ -244,22 +244,9 @@
                 } else if (orientation === 3) {
                   img.style.transform = 'rotate(180deg)';
                 } else {
-                  // If no useful orientation tag exists (orientation 1 or -1),
-                  // inspect the loaded image dimensions to detect sideways
-                  // photos. Many phone cameras record all photos in the same
-                  // orientation and rely solely on EXIF to correct them. If
-                  // the photo’s natural height is greater than its natural
-                  // width, we treat it as sideways and rotate it 270° (equivalent
-                  // to -90°) so faces appear upright. Without this fallback, images
-                  // lacking EXIF orientation but captured in portrait mode remain
-                  // sideways.
-                  img.addEventListener('load', () => {
-                    if (img.naturalHeight > img.naturalWidth) {
-                      img.style.transform = 'rotate(-90deg)';
-                      img.style.width = 'auto';
-                      img.style.height = '320px';
-                    }
-                  });
+                  // No explicit orientation tag; leave the image as-is. We
+                  // rely on CSS property image-orientation: from-image to
+                  // rotate images when supported.
                 }
               });
             }
@@ -372,6 +359,9 @@
   const bgmHighlights = document.getElementById('bgmHighlights');
   if (bgmHighlights) {
     bgmHighlights.volume = 0.4;
+    // Disable native looping; we'll implement custom looping to always
+    // start at the offset for each repeat
+    bgmHighlights.loop = false;
     const OFFSET = 53; // seconds to skip at the start of each loop
     const handleHighlightsReady = () => {
       try {
@@ -408,8 +398,8 @@
       { label: 'Dinners shared', value: 100 },
       { label: 'Stardew games played', value: 37 },
       { label: 'Hours of Star Wars watched', value: 25 },
-      { label: 'Crafts made', value: 12 }
-      ,{ label: 'Love for you', value: '∞' }
+      { label: 'Crafts made', value: 12 },
+      { label: 'Love for you', value: '∞' }
     ];
     stats.forEach(s => {
       const card = document.createElement('div');
