@@ -172,6 +172,17 @@
         const bgm = document.getElementById('bgm');
         if (bgm) {
           bgm.volume = 0.4;
+          // Set the audio to start 20 seconds in once metadata is loaded. This
+          // ensures we only seek after the duration is known.
+          bgm.addEventListener('loadedmetadata', () => {
+            try {
+              if (bgm.duration && bgm.duration > 20) {
+                bgm.currentTime = 20;
+              }
+            } catch (e) {
+              // Seeking can fail if the media isn't ready; ignore errors.
+            }
+          });
           // Attempt to play. Modern browsers may block autoplay until user
           // interacts with the page, so the catch is ignored silently.
           bgm.play().catch(() => {});
