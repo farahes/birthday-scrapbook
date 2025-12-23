@@ -222,22 +222,18 @@
                 break;
               }
             }
-
             // Detect orientation using EXIF metadata via getOrientation().
             // Only apply rotation when the EXIF tag indicates the image
             // should be rotated (orientation values 3, 6, or 8). We no longer
-            // rotate based on natural dimensions, as many mobile devices
-            // record all photos in landscape orientation and rely solely on
-            // EXIF tags for correct display. Relying on natural dimensions
-            // previously caused improperly oriented images to be rotated
-            // unexpectedly. If no orientation tag exists, the image will be
-            // displayed as-is.
-            // Only run orientation detection logic when no manual override is specified.
+            // rotate based on natural dimensions alone. The orientation
+            // value will be stored on the element for later use in sizing.
             if (!rotateOverride) {
               getOrientation(file.download_url).then((orientation) => {
-                // Apply rotations based on EXIF metadata. Orientation values
-                // 6 and 8 correspond to 90° and -90° rotations respectively,
-                // while 3 corresponds to a 180° flip.
+                // Save the orientation value on the image element for later
+                // sizing logic in the load handler. This avoids race
+                // conditions where the load event fires before the
+                // orientation has been determined.
+                img.dataset.orientation = orientation;
                 if (orientation === 6) {
                   img.style.transform = 'rotate(90deg)';
                   img.style.width = 'auto';
@@ -250,10 +246,6 @@
                   img.style.maxWidth = 'none';
                 } else if (orientation === 3) {
                   img.style.transform = 'rotate(180deg)';
-                } else {
-                  // No explicit orientation tag; leave the image as-is. We
-                  // rely on CSS property image-orientation: from-image to
-                  // rotate images when supported.
                 }
               });
             }
@@ -275,6 +267,37 @@
             tapeSpan.className = 'tape ' + tapes[Math.floor(Math.random()*tapes.length)];
             fig.appendChild(tapeSpan);
             gallery.appendChild(fig);
+
+            // Adjust the wrapper height based on image dimensions once the
+            // image has loaded. We choose a taller height for portrait or
+            // rotated images and a shorter height for landscape images to
+            // minimize the gap between the photo and its caption.
+            img.addEventListener('load', () => {
+              // Default to the minimum height defined in CSS
+              let targetHeight = 240;
+              // Determine if this image is explicitly rotated
+              if (rotateOverride) {
+                // Force a taller wrapper for manual rotations
+                targetHeight = 320;
+              } else {
+                // Check EXIF orientation stored earlier; if it indicates
+                // a 90° rotation (6 or 8) then treat as portrait
+                const ori = parseInt(img.dataset.orientation || '-1', 10);
+                if (ori === 6 || ori === 8) {
+                  targetHeight = 320;
+                } else if (ori === 3) {
+                  // 180° rotation does not change aspect ratio
+                  targetHeight = 240;
+                } else {
+                  // If no orientation tag, inspect natural dimensions
+                  if (img.naturalHeight > img.naturalWidth) {
+                    targetHeight = 320;
+                  }
+                }
+              }
+              // Apply the computed height to the wrapper
+              imgWrapper.style.height = `${targetHeight}px`;
+            });
           }
         });
 
