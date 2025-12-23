@@ -78,13 +78,14 @@
   const videoEl = document.getElementById('playlistVideo');
   const statsContainer = document.getElementById('statsContainer');
 
-  // We used to read EXIF metadata to determine orientation. However, remote
-  // images served from GitHub may not reliably expose orientation via
-  // JavaScript due to CORS and caching. Instead, we rely on the browser’s
-  // support for `image-orientation: from-image` and use natural
-  // dimensions to adjust the display sizes of landscape versus portrait
-  // photos. This keeps the gallery simple and avoids gaps beneath
-  // landscape images.
+  // Orientation detection for photos was previously attempted using EXIF
+  // metadata and external proxies, which proved unreliable due to CORS and
+  // caching restrictions. To ensure faces always appear upright, we now
+  // use a simple rule: if an image is taller than it is wide (portrait),
+  // we rotate it 90 degrees to landscape. The natural dimensions (width
+  // and height) are inspected after the image loads. This eliminates
+  // sideways photos without needing remote metadata and maintains a
+  // consistent height across all polaroids.
 
   // If none of these exist on the page, nothing to do
   if (!gallery && !videoEl && !statsContainer) return;
