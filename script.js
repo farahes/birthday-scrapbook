@@ -199,6 +199,25 @@
             img.alt = file.name.replace(/\.[^/.]+$/, '').replace(/_/g, ' ');
             img.loading = 'lazy';
 
+            // Predefine a list of image identifiers (numeric parts of the filename)
+            // that should be rotated 270 degrees (equivalent to -90 degrees).
+            const rotate270List = ['1242','1773','1963','3758','3864','2691','3024','4243'];
+            // If the current file's name includes any of these identifiers,
+            // apply the rotation immediately. This overrides EXIF orientation
+            // handling and natural dimension heuristics, since these images
+            // were specifically requested to be rotated.
+            // Determine if this image is explicitly listed to be rotated 270°.
+            let rotateOverride = false;
+            for (const code of rotate270List) {
+              if (file.name.toLowerCase().includes(code)) {
+                rotateOverride = true;
+                img.style.transform = 'rotate(-90deg)';
+                img.style.width = 'auto';
+                img.style.height = '320px';
+                break;
+              }
+            }
+
             // Detect orientation using EXIF metadata via getOrientation().
             // Only apply rotation when the EXIF tag indicates the image
             // should be rotated (orientation values 3, 6, or 8). We no longer
@@ -208,39 +227,42 @@
             // previously caused improperly oriented images to be rotated
             // unexpectedly. If no orientation tag exists, the image will be
             // displayed as-is.
-            getOrientation(file.download_url).then((orientation) => {
-              // Apply rotations based on EXIF metadata. Orientation values
-              // 6 and 8 correspond to 90° and -90° rotations respectively,
-              // while 3 corresponds to a 180° flip.
-              if (orientation === 6) {
-                img.style.transform = 'rotate(90deg)';
-                img.style.width = 'auto';
-                img.style.height = '320px';
-              } else if (orientation === 8) {
-                img.style.transform = 'rotate(-90deg)';
-                img.style.width = 'auto';
-                img.style.height = '320px';
-              } else if (orientation === 3) {
-                img.style.transform = 'rotate(180deg)';
-              } else {
-                // If no useful orientation tag exists (orientation 1 or -1),
-                // inspect the loaded image dimensions to detect sideways
-                // photos. Many phone cameras record all photos in the same
-                // orientation and rely solely on EXIF to correct them. If
-                // the photo’s natural height is greater than its natural
-                // width, we treat it as sideways and rotate it 90° so
-                // faces appear upright. Without this fallback, images
-                // lacking EXIF orientation but captured in portrait mode
-                // remain sideways.
-                img.addEventListener('load', () => {
-                  if (img.naturalHeight > img.naturalWidth) {
-                    img.style.transform = 'rotate(90deg)';
-                    img.style.width = 'auto';
-                    img.style.height = '320px';
-                  }
-                });
-              }
-            });
+            // Only run orientation detection logic when no manual override is specified.
+            if (!rotateOverride) {
+              getOrientation(file.download_url).then((orientation) => {
+                // Apply rotations based on EXIF metadata. Orientation values
+                // 6 and 8 correspond to 90° and -90° rotations respectively,
+                // while 3 corresponds to a 180° flip.
+                if (orientation === 6) {
+                  img.style.transform = 'rotate(90deg)';
+                  img.style.width = 'auto';
+                  img.style.height = '320px';
+                } else if (orientation === 8) {
+                  img.style.transform = 'rotate(-90deg)';
+                  img.style.width = 'auto';
+                  img.style.height = '320px';
+                } else if (orientation === 3) {
+                  img.style.transform = 'rotate(180deg)';
+                } else {
+                  // If no useful orientation tag exists (orientation 1 or -1),
+                  // inspect the loaded image dimensions to detect sideways
+                  // photos. Many phone cameras record all photos in the same
+                  // orientation and rely solely on EXIF to correct them. If
+                  // the photo’s natural height is greater than its natural
+                  // width, we treat it as sideways and rotate it 270° (equivalent
+                  // to -90°) so faces appear upright. Without this fallback, images
+                  // lacking EXIF orientation but captured in portrait mode remain
+                  // sideways.
+                  img.addEventListener('load', () => {
+                    if (img.naturalHeight > img.naturalWidth) {
+                      img.style.transform = 'rotate(-90deg)';
+                      img.style.width = 'auto';
+                      img.style.height = '320px';
+                    }
+                  });
+                }
+              });
+            }
 
             fig.appendChild(img);
             const cap = document.createElement('figcaption');
@@ -350,15 +372,28 @@
   const bgmHighlights = document.getElementById('bgmHighlights');
   if (bgmHighlights) {
     bgmHighlights.volume = 0.4;
+    const OFFSET = 53; // seconds to skip at the start of each loop
     const handleHighlightsReady = () => {
       try {
-        bgmHighlights.currentTime = 0;
+        // Seek to the offset once the audio is ready
+        if (!isNaN(bgmHighlights.duration) && bgmHighlights.duration > OFFSET) {
+          bgmHighlights.currentTime = OFFSET;
+        }
       } catch (e) {
         // seeking may fail on some browsers; ignore
       }
       bgmHighlights.play().catch(() => {});
       bgmHighlights.removeEventListener('canplay', handleHighlightsReady);
     };
+    // When the audio ends, restart it from the offset rather than the beginning
+    bgmHighlights.addEventListener('ended', () => {
+      try {
+        bgmHighlights.currentTime = OFFSET;
+      } catch (e) {
+        // ignore seeking errors
+      }
+      bgmHighlights.play().catch(() => {});
+    });
     if (bgmHighlights.readyState >= 2) {
       handleHighlightsReady();
     } else {
@@ -374,6 +409,7 @@
       { label: 'Stardew games played', value: 37 },
       { label: 'Hours of Star Wars watched', value: 25 },
       { label: 'Crafts made', value: 12 }
+      ,{ label: 'Love for you', value: '∞' }
     ];
     stats.forEach(s => {
       const card = document.createElement('div');
