@@ -1,4 +1,4 @@
-# Birthday Scrapbook (GitHub Pages)
+# Birthday Scrapbook for Chad
 
 A tiny scrapbook-style "year wrapped" website.
 
