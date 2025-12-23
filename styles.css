@@ -30,6 +30,36 @@ body{
   position: relative;
 }
 
+/* Yellow shimmer overlay: create subtle glowing spots moving across the
+   page. We use a pseudo-element before the body so that it sits
+   underneath interactive content but above the background. The overlay
+   combines multiple radial gradients tinted yellow and animates their
+   positions over time to create a shimmering effect. */
+body::before{
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+  /* Two radial gradients tinted yellow at opposite corners */
+  background-image:
+    radial-gradient(circle at top left, rgba(255, 255, 150, 0.25) 0%, rgba(255, 255, 150, 0.0) 70%),
+    radial-gradient(circle at bottom right, rgba(255, 255, 200, 0.20) 0%, rgba(255, 255, 200, 0.0) 70%);
+  background-size: 200% 200%;
+  background-repeat: no-repeat;
+  mix-blend-mode: overlay;
+  animation: shimmerMove 18s linear infinite;
+}
+
+@keyframes shimmerMove {
+  0% {
+    background-position: 0% 0%, 100% 100%;
+  }
+  100% {
+    background-position: 100% 100%, 0% 0%;
+  }
+}
+
 /* Shimmer effect overlay across the entire page */
 body::after{
   content: "";
@@ -40,7 +70,8 @@ body::after{
   background: linear-gradient(45deg, rgba(255,255,255,0.0) 0%, rgba(255,255,255,0.4) 50%, rgba(255,255,255,0.0) 100%);
   mix-blend-mode: overlay;
   /* Increase opacity slightly so the shimmer is visible on lighter backgrounds */
-  opacity: 0.5;
+  /* Lower opacity for the white shimmer so it blends with the new yellow overlay */
+  opacity: 0.25;
   background-size: 200% 200%;
   animation: shimmer 5s linear infinite;
   z-index: 2;
@@ -224,11 +255,16 @@ body::after{
  * screens, the height adjusts automatically. Overflow is hidden so
  * rotated and scaled images do not bleed beyond the rounded corners.
  */
+/*
+ * Wrapper for the photo inside each polaroid card. We use a fixed height
+ * rather than an aspect ratio so that every card has consistent spacing
+ * between the photo and the caption. Overflow is hidden to ensure
+ * rotated or cropped photos do not bleed outside the white card.
+ */
 .polaroid-img-wrapper{
   position: relative;
   width: 100%;
-  /* 3:4 aspect ratio (width : height) for vertical polaroid frame */
-  aspect-ratio: 3 / 4;
+  height: 240px; /* consistent height for all photos */
   border-radius: 14px;
   overflow: hidden;
 }
@@ -415,7 +451,10 @@ body::after{
 /* Responsive tweaks */
 @media (max-width: 880px){
   .polaroid-grid{ grid-template-columns: 1fr; }
-  .polaroid img{ height: 280px; }
+  /* On smaller screens, allow images to fill the wrapper height. We avoid
+     setting a fixed pixel height here so the base 100% height and
+     object-fit rules continue to apply. */
+  .polaroid img{ height: 100%; }
   .nav-links{ flex-direction: column; align-items: stretch; }
   .btn{ width: 100%; text-align: center; }
 }
