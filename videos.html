@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Moments in Motion</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="grain" aria-hidden="true"></div>
+    <header class="simple-header">
+      <h1>Moments in Motion</h1>
+      <p class="sub">Because some memories are better moving.</p>
+    </header>
+    <main class="main">
+      <div class="video-grid">
+        <div class="video-frame">
+          <video controls preload="metadata" poster="./assets/img/IMG_0412.JPEG">
+            <source src="./assets/img/IMG_0412.MOV" type="video/mp4">
+            Your browser does not support the video tag.
+          </video>
+          <figcaption>Our orchard giggles</figcaption>
+        </div>
+        <div class="video-frame">
+          <video controls preload="metadata" poster="./assets/img/IMG_0280.JPEG">
+            <source src="./assets/img/IMG_0852.MOV" type="video/mp4">
+            Your browser does not support the video tag.
+          </video>
+          <figcaption>Just us being us</figcaption>
+        </div>
+      </div>
+      <nav class="nav-links">
+        <a class="btn btn--ghost" href="highlights.html">← Back</a>
+        <a class="btn" href="letter.html">Next →</a>
+      </nav>
+    </main>
+    <footer class="footer simple-footer">
+      <p class="tiny muted">Page 2 of 3</p>
+    </footer>
+    <canvas id="confetti" class="confetti" aria-hidden="true"></canvas>
+    <script src="./script.js"></script>
+  </body>
+</html>
