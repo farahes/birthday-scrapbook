@@ -1,143 +1,32 @@
 <!doctype html>
 <html lang="en">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Happy 22nd, Babe — Your Year Wrapped</title>
-  <meta name="description" content="A scrapbook-style year wrapped for a 22nd birthday." />
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="./styles.css" />
-</head>
-<body>
-  <div class="grain" aria-hidden="true"></div>
-
-  <header class="hero" id="top">
-    <div class="hero__paper">
-      <div class="stamps">
-        <span class="stamp">DEC 24</span>
-        <span class="stamp stamp--alt">22</span>
-        <span class="stamp stamp--ink">YEAR WRAPPED</span>
-      </div>
-
-      <h1>Happy Birthday, <span class="scribble">my love</span>.</h1>
-      <p class="sub">
-        A tiny scrapbook of our year together — made with love, bad jokes, and very good memories.
-      </p>
-
-      <div class="hero__stats" role="list">
-        <div class="stat" role="listitem">
-          <div class="stat__num" id="nightsCount">296</div>
-          <div class="stat__label">nights slept together</div>
-        </div>
-        <div class="stat" role="listitem">
-          <div class="stat__num" id="adventuresCount">countless</div>
-          <div class="stat__label">adventures (and more coming)</div>
-        </div>
-        <div class="stat" role="listitem">
-          <div class="stat__num">22</div>
-          <div class="stat__label">years young</div>
-        </div>
-      </div>
-
-      <div class="hero__cta">
-        <a class="btn" href="#wrapped">Start the wrap</a>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Our Adventure — Happy 22nd</title>
+    <!-- Google fonts for a warm, scrapbook feel -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <!-- A subtle grain overlay for texture -->
+    <div class="grain" aria-hidden="true"></div>
+    <!-- Hero section introducing the scrapbook adventure -->
+    <header class="hero hero--index">
+      <div class="hero__overlay">
+        <h1>Happy 22nd Birthday, my love!</h1>
+        <p class="sub">I made you a tiny scrapbook adventure — flip through our favourite memories and relive the magic.</p>
+        <a class="btn" href="highlights.html">Start the adventure →</a>
         <button class="btn btn--ghost" id="confettiBtn" type="button">Throw confetti</button>
+        <p class="tiny">Press <kbd>Space</kbd> to celebrate ✨</p>
       </div>
-
-      <p class="tiny">
-        Tip: press <kbd>Space</kbd> for confetti ✨
-      </p>
-    </div>
-  </header>
-
-  <main id="wrapped" class="main">
-    <section class="section">
-      <div class="section__title">
-        <h2>Our Highlights</h2>
-        <p>Three moments I want to keep on repeat.</p>
-      </div>
-
-      <div class="polaroid-grid">
-        <figure class="polaroid">
-          <img src="./assets/img/IMG_4108.jpeg" alt="A candid dinner moment." loading="lazy" />
-          <figcaption>Good food, better company.</figcaption>
-          <span class="tape tape--a"></span>
-        </figure>
-
-        <figure class="polaroid polaroid--tilt">
-          <img src="./assets/img/IMG_4112.jpeg" alt="A close-up silly moment with candlelight." loading="lazy" />
-          <figcaption>My favorite goof.</figcaption>
-          <span class="tape tape--b"></span>
-        </figure>
-
-        <figure class="polaroid">
-          <img src="./assets/img/IMG_4175.jpeg" alt="Apple orchard photo with a big fruit picker pole." loading="lazy" />
-          <figcaption>Adventures: unlocked.</figcaption>
-          <span class="tape tape--c"></span>
-        </figure>
-      </div>
-    </section>
-
-    <section class="section">
-      <div class="section__title">
-        <h2>The Wrap</h2>
-        <p>Little stats + little notes. Big feelings.</p>
-      </div>
-
-      <div class="cards">
-        <article class="card">
-          <h3>Top Mood</h3>
-          <p class="big">“Safe.”</p>
-          <p class="muted">You make life feel calm even when it’s chaotic.</p>
-        </article>
-
-        <article class="card">
-          <h3>Most Replayed Moment</h3>
-          <p class="big">That look you do when you’re trying not to laugh.</p>
-          <p class="muted">(I fail every time.)</p>
-        </article>
-
-        <article class="card">
-          <h3>Sleep Streak</h3>
-          <p class="big"><span id="nightsInline">296</span> nights</p>
-          <p class="muted">And I still steal the blanket. No regrets.</p>
-        </article>
-
-        <article class="card">
-          <h3>Next Up</h3>
-          <p class="big">More adventures.</p>
-          <p class="muted">More trips, more laughs, more “let’s do it” moments.</p>
-        </article>
-      </div>
-    </section>
-
-    <section class="section section--note">
-      <div class="note">
-        <h2>A little letter</h2>
-        <p>
-          Happy 22nd birthday. I’m so proud of you — the way you show up, the way you care,
-          the way you make ordinary days feel like something worth saving.
-        </p>
-        <p>
-          Here’s to another year of us. I love you.
-        </p>
-
-        <div class="note__sig">
-          <span class="sig-line"></span>
-          <span class="sig">— Farah</span>
-        </div>
-      </div>
-    </section>
-
-    <footer class="footer">
-      <a class="back" href="#top">Back to the top ↑</a>
-      <p class="tiny muted">Made as a scrapbook-style “year wrapped”.</p>
+    </header>
+    <footer class="footer simple-footer">
+      <p class="tiny muted">Made with so much love by Farah.</p>
     </footer>
-  </main>
-
-  <canvas id="confetti" class="confetti" aria-hidden="true"></canvas>
-  <script src="./script.js"></script>
-</body>
+    <canvas id="confetti" class="confetti" aria-hidden="true"></canvas>
+    <script src="./script.js"></script>
+  </body>
 </html>
