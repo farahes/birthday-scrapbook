@@ -209,25 +209,37 @@
             // unexpectedly. If no orientation tag exists, the image will be
             // displayed as-is.
             getOrientation(file.download_url).then((orientation) => {
-              // Rotate 90° clockwise
+              // Apply rotations based on EXIF metadata. Orientation values
+              // 6 and 8 correspond to 90° and -90° rotations respectively,
+              // while 3 corresponds to a 180° flip.
               if (orientation === 6) {
                 img.style.transform = 'rotate(90deg)';
-                // Swap width/height for rotated images so they fit the
-                // polaroid frame without adding large gaps. Use a maximum
-                // height to maintain consistent sizes.
                 img.style.width = 'auto';
                 img.style.height = '320px';
               } else if (orientation === 8) {
-                // Rotate 90° counter-clockwise
                 img.style.transform = 'rotate(-90deg)';
                 img.style.width = 'auto';
                 img.style.height = '320px';
               } else if (orientation === 3) {
-                // Rotate 180° (rare but handle for completeness)
                 img.style.transform = 'rotate(180deg)';
+              } else {
+                // If no useful orientation tag exists (orientation 1 or -1),
+                // inspect the loaded image dimensions to detect sideways
+                // photos. Many phone cameras record all photos in the same
+                // orientation and rely solely on EXIF to correct them. If
+                // the photo’s natural height is greater than its natural
+                // width, we treat it as sideways and rotate it 90° so
+                // faces appear upright. Without this fallback, images
+                // lacking EXIF orientation but captured in portrait mode
+                // remain sideways.
+                img.addEventListener('load', () => {
+                  if (img.naturalHeight > img.naturalWidth) {
+                    img.style.transform = 'rotate(90deg)';
+                    img.style.width = 'auto';
+                    img.style.height = '320px';
+                  }
+                });
               }
-              // If orientation is 1 or -1, do nothing. The browser will
-              // respect image-orientation CSS when supported.
             });
 
             fig.appendChild(img);
