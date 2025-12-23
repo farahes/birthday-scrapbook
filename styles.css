@@ -151,18 +151,20 @@ body{
   object-fit: cover;
   border-radius: 14px;
   display: block;
+  /* Respect EXIF orientation metadata for all images to ensure they display
+     upright without manual rotation. This property is supported in modern
+     browsers and will automatically rotate images based on their EXIF
+     orientation tag. */
+  image-orientation: from-image;
 }
 
 /* Landscape images (width > height) need to be rotated so they fit
    the vertical polaroid frame. The rotation is applied after the
    natural dimensions are detected in script.js. */
 .polaroid img.landscape{
-  /* Rotate landscape images -90deg so that photos taken horizontally appear upright */
-  transform: rotate(-90deg);
-  transform-origin: center center;
-  width: auto;
-  height: 320px;
-  object-fit: cover;
+  /* Landscape class retained for potential future styling, but we no longer rotate
+     landscape images manually because image orientation is handled via
+     image-orientation: from-image. */
 }
 .polaroid figcaption{
   font-family: 'DM Serif Display', serif;
