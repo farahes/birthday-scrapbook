@@ -78,14 +78,85 @@
   const videoEl = document.getElementById('playlistVideo');
   const statsContainer = document.getElementById('statsContainer');
 
-  // Orientation detection for photos was previously attempted using EXIF
-  // metadata and external proxies, which proved unreliable due to CORS and
-  // caching restrictions. To ensure faces always appear upright, we now
-  // use a simple rule: if an image is taller than it is wide (portrait),
-  // we rotate it 90 degrees to landscape. The natural dimensions (width
-  // and height) are inspected after the image loads. This eliminates
-  // sideways photos without needing remote metadata and maintains a
-  // consistent height across all polaroids.
+  /**
+   * Reads the EXIF orientation tag from a JPEG file. Returns a Promise that
+   * resolves with an orientation value (1 = default, 3 = 180°, 6 = 90°, 8 = -90°)
+   * or -1 if no orientation tag is found or parsing fails.
+   *
+   * Note: This function only fetches the header portion of the file and
+   * therefore should not significantly impact page load times. If it cannot
+   * determine the orientation, it resolves to -1.
+   *
+   * @param {string} url - The URL of the image to examine.
+   * @returns {Promise<number>}
+   */
+  /**
+   * Reads the EXIF orientation tag from a JPEG file. Returns a Promise that
+   * resolves with an orientation value (1 = default, 3 = 180°, 6 = 90°, 8 = -90°)
+   * or -1 if no orientation tag is found or parsing fails.
+   *
+   * To avoid CORS restrictions when requesting images from GitHub raw URLs,
+   * we proxy the request through corsproxy.io. Only the first portion of
+   * the file is downloaded, so this should not significantly impact load times.
+   *
+   * @param {string} url - The URL of the image to examine.
+   * @returns {Promise<number>}
+   */
+  function getOrientation(url) {
+    return new Promise((resolve) => {
+      // Proxy the request to bypass CORS. Without this prefix, GitHub raw
+      // requests may fail to return the necessary headers to read the binary
+      // data. The proxy simply relays the request and adds the appropriate
+      // CORS headers.
+      const proxied = `https://corsproxy.io/?${encodeURIComponent(url)}`;
+      fetch(proxied)
+        .then((response) => response.arrayBuffer())
+        .then((buffer) => {
+          const view = new DataView(buffer);
+          // JPEG files begin with 0xFFD8. If not present, bail out.
+          if (view.getUint16(0, false) !== 0xFFD8) {
+            resolve(-1);
+            return;
+          }
+          let offset = 2;
+          const length = view.byteLength;
+          while (offset < length) {
+            const marker = view.getUint16(offset, false);
+            offset += 2;
+            // APP1 marker
+            if (marker === 0xFFE1) {
+              // Check for EXIF header (0x45786966 = 'Exif' in ASCII)
+              if (view.getUint32(offset + 2, false) !== 0x45786966) {
+                break;
+              }
+              const little = view.getUint16(offset + 8, false) === 0x4949;
+              const exifOffset = offset + 10;
+              const tiffOffset = exifOffset + view.getUint32(exifOffset + 4, little);
+              const tags = view.getUint16(tiffOffset, little);
+              for (let i = 0; i < tags; i++) {
+                const tagOffset = tiffOffset + 2 + i * 12;
+                const tag = view.getUint16(tagOffset, little);
+                if (tag === 0x0112) {
+                  const orientation = view.getUint16(tagOffset + 8, little);
+                  resolve(orientation);
+                  return;
+                }
+              }
+              break;
+            } else if ((marker & 0xff00) !== 0xff00) {
+              break;
+            } else {
+              offset += view.getUint16(offset, false);
+            }
+          }
+          resolve(-1);
+        })
+        .catch(() => {
+          // On any fetch or parsing error, fall back to -1.
+          resolve(-1);
+        });
+    });
+  }
 
   // If none of these exist on the page, nothing to do
   if (!gallery && !videoEl && !statsContainer) return;
@@ -128,36 +199,35 @@
             img.alt = file.name.replace(/\.[^/.]+$/, '').replace(/_/g, ' ');
             img.loading = 'lazy';
 
-            // After the image has loaded, determine whether it is landscape
-            // or portrait by comparing natural dimensions. Landscape images
-            // are given a smaller height and fill the width of the card,
-            // while portrait images remain taller with a fixed height. This
-            // prevents a large whitespace area beneath landscape photos and
-            // keeps caption spacing consistent.
-            img.addEventListener('load', () => {
-              // If the image is taller than it is wide, it likely contains
-              // sideways faces. Rotate it 90 degrees to a landscape
-              // orientation. After rotation, set a consistent height and
-              // use object-fit: cover so the photo fills its frame without
-              // leaving large gaps. Landscape images remain unrotated but
-              // share the same height.
-              const isPortrait = img.naturalHeight > img.naturalWidth;
-              if (isPortrait) {
-                // Rotate 90 degrees clockwise to make the faces upright
+            // Detect orientation using EXIF metadata via getOrientation().
+            // Only apply rotation when the EXIF tag indicates the image
+            // should be rotated (orientation values 3, 6, or 8). We no longer
+            // rotate based on natural dimensions, as many mobile devices
+            // record all photos in landscape orientation and rely solely on
+            // EXIF tags for correct display. Relying on natural dimensions
+            // previously caused improperly oriented images to be rotated
+            // unexpectedly. If no orientation tag exists, the image will be
+            // displayed as-is.
+            getOrientation(file.download_url).then((orientation) => {
+              // Rotate 90° clockwise
+              if (orientation === 6) {
                 img.style.transform = 'rotate(90deg)';
-                // After rotation, swap dimensions: width should be auto
-                // so it scales based on content and height fixed to keep
-                // polaroids uniform.
+                // Swap width/height for rotated images so they fit the
+                // polaroid frame without adding large gaps. Use a maximum
+                // height to maintain consistent sizes.
                 img.style.width = 'auto';
-                img.style.height = '240px';
-                img.style.objectFit = 'cover';
-              } else {
-                // Keep landscape images upright. Fill the width of the
-                // polaroid and assign a consistent height.
-                img.style.width = '100%';
-                img.style.height = '240px';
-                img.style.objectFit = 'cover';
+                img.style.height = '320px';
+              } else if (orientation === 8) {
+                // Rotate 90° counter-clockwise
+                img.style.transform = 'rotate(-90deg)';
+                img.style.width = 'auto';
+                img.style.height = '320px';
+              } else if (orientation === 3) {
+                // Rotate 180° (rare but handle for completeness)
+                img.style.transform = 'rotate(180deg)';
               }
+              // If orientation is 1 or -1, do nothing. The browser will
+              // respect image-orientation CSS when supported.
             });
 
             fig.appendChild(img);
@@ -259,6 +329,30 @@
         }
       }
     });
+
+  // Play background music on the highlights page if available. The audio
+  // element with id="bgmHighlights" should be defined in highlights.html
+  // with a valid MP3 source. Autoplay policies in browsers may prevent
+  // playback until the user interacts with the page; however, we still
+  // attempt to start the music once the metadata has loaded.
+  const bgmHighlights = document.getElementById('bgmHighlights');
+  if (bgmHighlights) {
+    bgmHighlights.volume = 0.4;
+    const handleHighlightsReady = () => {
+      try {
+        bgmHighlights.currentTime = 0;
+      } catch (e) {
+        // seeking may fail on some browsers; ignore
+      }
+      bgmHighlights.play().catch(() => {});
+      bgmHighlights.removeEventListener('canplay', handleHighlightsReady);
+    };
+    if (bgmHighlights.readyState >= 2) {
+      handleHighlightsReady();
+    } else {
+      bgmHighlights.addEventListener('canplay', handleHighlightsReady);
+    }
+  }
 
   // Build stats cards
   if (statsContainer) {
