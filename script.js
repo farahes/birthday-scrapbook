@@ -176,8 +176,8 @@
           // ensures we only seek after the duration is known.
           bgm.addEventListener('loadedmetadata', () => {
             try {
-              if (bgm.duration && bgm.duration > 20) {
-                bgm.currentTime = 20;
+              if (bgm.duration && bgm.duration > 40) {
+                bgm.currentTime = 40;
               }
             } catch (e) {
               // Seeking can fail if the media isn't ready; ignore errors.
