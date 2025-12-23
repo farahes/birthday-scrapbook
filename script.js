@@ -214,6 +214,8 @@
                 img.style.transform = 'rotate(-90deg)';
                 img.style.width = 'auto';
                 img.style.height = '320px';
+                // Ensure rotated images do not exceed the polaroid width
+                img.style.maxWidth = '100%';
                 break;
               }
             }
@@ -237,10 +239,12 @@
                   img.style.transform = 'rotate(90deg)';
                   img.style.width = 'auto';
                   img.style.height = '320px';
+                  img.style.maxWidth = '100%';
                 } else if (orientation === 8) {
                   img.style.transform = 'rotate(-90deg)';
                   img.style.width = 'auto';
                   img.style.height = '320px';
+                  img.style.maxWidth = '100%';
                 } else if (orientation === 3) {
                   img.style.transform = 'rotate(180deg)';
                 } else {

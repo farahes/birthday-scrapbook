@@ -209,6 +209,8 @@ body{
   font-size: 20px;
   /* Center align caption text within the polaroid */
   text-align: center;
+  width: 100%;
+  display: block;
 }
 .tape{
   position:absolute;
