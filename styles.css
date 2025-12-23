@@ -156,12 +156,11 @@ body{
      width of the polaroid wrapper. For rotated images, dimensions are
      set inline via JS to avoid white gaps. */
   width: 100%;
-  max-width: 100%;
-  height: auto;
-  max-height: 320px;
-  /* Fill the wrapper by cropping edges rather than leaving large
-     white gaps. Using cover ensures the available space is
-     utilized, especially for wide images. */
+  height: 100%;
+  /* Ensure images always fill the wrapper completely. Both width and
+     height are set to 100% so they scale uniformly to the fixed
+     wrapper height. object-fit: cover crops edges if necessary to
+     preserve aspect ratio while filling the space. */
   object-fit: cover;
   border-radius: 14px;
   display: block;
@@ -182,9 +181,17 @@ body{
  * when required. Overflow remains hidden so rotated images do not
  * bleed outside the card.
  */
+/*
+ * Wrapper around each polaroid image. We set a fixed height here to ensure
+ * consistent spacing between the image and its caption across all cards.
+ * Overflow is hidden so that any excess of the photo (due to rotation
+ * or aspect ratio differences) does not bleed outside of the frame. A
+ * fixed height removes the need for dynamically adjusting the wrapper
+ * size in JavaScript, which previously led to inconsistent paddings.
+ */
 .polaroid-img-wrapper{
   width: 100%;
-  min-height: 240px;
+  height: 240px;
   max-width: 100%;
   border-radius: 14px;
   overflow: hidden;
@@ -200,19 +207,21 @@ body{
 }
 
 /* Orientation-specific rotations applied via JS classes */
+/* For images rotated 90 degrees, fill the wrapper completely. Height and
+   width are both set to 100% so the photo scales to cover the fixed
+   wrapper height without leaving empty space. */
 .polaroid img.rotate90{
   transform: rotate(90deg);
-  width: auto;
-  height: 320px;
-  /* Use cover for rotated images as well to avoid blank space */
+  width: 100%;
+  height: 100%;
   object-fit: cover;
   transform-origin: center center;
 }
+/* For images rotated -90 degrees (270°), fill the wrapper completely. */
 .polaroid img.rotate270{
   transform: rotate(-90deg);
-  width: auto;
-  height: 320px;
-  /* Use cover for rotated images as well to avoid blank space */
+  width: 100%;
+  height: 100%;
   object-fit: cover;
   transform-origin: center center;
 }

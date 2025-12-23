@@ -268,36 +268,8 @@
             fig.appendChild(tapeSpan);
             gallery.appendChild(fig);
 
-            // Adjust the wrapper height based on image dimensions once the
-            // image has loaded. We choose a taller height for portrait or
-            // rotated images and a shorter height for landscape images to
-            // minimize the gap between the photo and its caption.
-            img.addEventListener('load', () => {
-              // Default to the minimum height defined in CSS
-              let targetHeight = 240;
-              // Determine if this image is explicitly rotated
-              if (rotateOverride) {
-                // Force a taller wrapper for manual rotations
-                targetHeight = 320;
-              } else {
-                // Check EXIF orientation stored earlier; if it indicates
-                // a 90° rotation (6 or 8) then treat as portrait
-                const ori = parseInt(img.dataset.orientation || '-1', 10);
-                if (ori === 6 || ori === 8) {
-                  targetHeight = 320;
-                } else if (ori === 3) {
-                  // 180° rotation does not change aspect ratio
-                  targetHeight = 240;
-                } else {
-                  // If no orientation tag, inspect natural dimensions
-                  if (img.naturalHeight > img.naturalWidth) {
-                    targetHeight = 320;
-                  }
-                }
-              }
-              // Apply the computed height to the wrapper
-              imgWrapper.style.height = `${targetHeight}px`;
-            });
+            // We no longer adjust the wrapper height dynamically in JavaScript.
+            // Instead, a fixed height is defined in CSS for the image wrapper.
           }
         });
 
