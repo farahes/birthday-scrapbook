@@ -171,6 +171,8 @@
         ];
         let reasonIndex = 0;
         files.forEach(file => {
+          // Only consider image assets that begin with "IMG". Exclude decorative
+          // background files like filmstrip and textures.
           if (/^IMG.*\.(jpe?g|png)$/i.test(file.name)) {
             const fig = document.createElement('figure');
             fig.className = 'polaroid';
@@ -180,29 +182,61 @@
             img.src = file.download_url;
             img.alt = file.name.replace(/\.[^/.]+$/, '').replace(/_/g, ' ');
             img.loading = 'lazy';
-            // Detect orientation using EXIF metadata. We fetch the JPEG
-            // header to read the orientation and then apply a CSS rotation
-            // if needed. This ensures images are displayed upright and
-            // correctly oriented regardless of device metadata.
+
+            // Detect orientation using EXIF metadata. After the orientation
+            // promise resolves, adjust the image rotation and dimensions
+            // accordingly. We also use a fallback that relies on natural
+            // dimensions if no EXIF orientation is present. This ensures
+            // sideways photos without metadata are corrected.
             getOrientation(file.download_url).then((orientation) => {
+              const rotateImg = (deg) => {
+                img.style.transform = `rotate(${deg}deg)`;
+                // When rotating 90 or 270 degrees, swap width/height so
+                // the image fits within its polaroid frame without a large
+                // horizontal gap. A fixed height keeps overall sizes
+                // consistent, while width auto allows the rotated image to
+                // scale proportionally.
+                if (deg === 90 || deg === -90) {
+                  img.style.width = 'auto';
+                  img.style.height = '320px';
+                }
+              };
               switch (orientation) {
                 case 6: // Rotate 90 degrees
-                  img.style.transform = 'rotate(90deg)';
+                  rotateImg(90);
                   break;
                 case 8: // Rotate -90 degrees
-                  img.style.transform = 'rotate(-90deg)';
+                  rotateImg(-90);
                   break;
                 case 3: // Rotate 180 degrees
-                  img.style.transform = 'rotate(180deg)';
+                  rotateImg(180);
                   break;
                 default:
-                  // No rotation needed
+                  // If no orientation tag is found, wait until the image
+                  // has loaded and then examine natural dimensions. If the
+                  // photo is wider than tall (landscape), rotate 90 degrees
+                  // to better fit the vertical polaroid frame. This helps
+                  // address images lacking EXIF orientation data.
+                  img.addEventListener('load', () => {
+                    if (img.naturalWidth > img.naturalHeight) {
+                      rotateImg(90);
+                    }
+                  });
                   break;
               }
             }).catch(() => {
-              // If orientation detection fails, we do nothing and display
-              // the image as-is.
+              // If orientation detection fails, use natural dimensions as a
+              // fallback. Rotating landscape images improves the fit of
+              // sideways photos.
+              img.addEventListener('load', () => {
+                if (img.naturalWidth > img.naturalHeight) {
+                  img.style.transform = 'rotate(90deg)';
+                  img.style.width = 'auto';
+                  img.style.height = '320px';
+                }
+              });
             });
+
             fig.appendChild(img);
             const cap = document.createElement('figcaption');
             // Assign a reason for this image. Cycle through if there are
@@ -216,6 +250,31 @@
             gallery.appendChild(fig);
           }
         });
+
+        // After all images are appended, set up an IntersectionObserver to
+        // reveal each polaroid as it enters the viewport. We also assign
+        // random rotation and slight translation offsets to create a
+        // scattered, organic layout. Without this, polaroids appear in
+        // perfectly aligned rows. The random offsets are modest to avoid
+        // overlapping text or overflowing outside the page.
+        const obs = new IntersectionObserver((entries, observer) => {
+          entries.forEach(entry => {
+            if (entry.isIntersecting) {
+              const el = entry.target;
+              // Random rotation between -4deg and +4deg
+              const angle = (Math.random() * 8) - 4;
+              el.style.setProperty('--angle', `${angle}deg`);
+              // Random small translations in X and Y (-12px to +12px)
+              const dx = (Math.random() * 24) - 12;
+              const dy = (Math.random() * 24) - 12;
+              el.style.setProperty('--dx', `${dx}px`);
+              el.style.setProperty('--dy', `${dy}px`);
+              el.classList.add('visible');
+              observer.unobserve(el);
+            }
+          });
+        }, { threshold: 0.15 });
+        document.querySelectorAll('.polaroid').forEach(p => obs.observe(p));
       }
       // Build video playlist on the video page. We gather all .MOV files and
       // stream them one after another using a single <video> element. The
@@ -255,23 +314,24 @@
         const bgm = document.getElementById('bgm');
         if (bgm) {
           bgm.volume = 0.4;
-          // Start the audio at 40 seconds. We wait until metadata is loaded so
-          // that the duration is known, then seek and play. If metadata is
-          // already loaded, we can immediately seek and play.
-          const startAudio = () => {
+          const offset = 40;
+          // When the audio can start playing, seek to the desired offset and play.
+          const handleCanPlay = () => {
             try {
-              if (bgm.duration && bgm.duration > 40) {
-                bgm.currentTime = 40;
+              if (!isNaN(bgm.duration) && bgm.duration > offset) {
+                bgm.currentTime = offset;
               }
             } catch (e) {
               // ignore seeking errors
             }
             bgm.play().catch(() => {});
+            bgm.removeEventListener('canplay', handleCanPlay);
           };
-          if (bgm.readyState >= 1) {
-            startAudio();
+          // If the audio is already ready, call the handler; otherwise wait.
+          if (bgm.readyState >= 2) {
+            handleCanPlay();
           } else {
-            bgm.addEventListener('loadedmetadata', startAudio, { once: true });
+            bgm.addEventListener('canplay', handleCanPlay);
           }
         }
       }

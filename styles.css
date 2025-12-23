@@ -136,20 +136,25 @@ body{
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 18px;
 }
+/* Base polaroid wrapper. Each figure begins hidden and slides/fades
+   in when it enters the viewport. The transform here will be
+   overridden with custom properties once the element becomes visible.
+ */
 .polaroid{
   background: #fff;
   border-radius: 18px;
   padding: 14px 14px 18px;
   box-shadow: 0 16px 34px rgba(0,0,0,.12);
   position: relative;
-  transform: rotate(-.6deg);
+  opacity: 0;
+  transform: translateY(30px) rotate(0deg);
+  transition: opacity .7s ease-out, transform .7s ease-out;
 }
 .polaroid--tilt{ transform: rotate(1.2deg); }
-.polaroid img{
-  /* Display images fully without cropping. Setting height to auto ensures
-     the aspect ratio is preserved and the entire photo is visible. A maximum
-     height keeps the polaroids roughly similar in size while allowing
-     portrait and landscape photos to scale appropriately. */
+ .polaroid img{
+  /* Preserve aspect ratio and prevent cropping. Images will scale to the
+     width of the polaroid wrapper. For rotated images, dimensions are
+     set inline via JS to avoid white gaps. */
   width: 100%;
   max-width: 100%;
   height: auto;
@@ -157,8 +162,35 @@ body{
   object-fit: contain;
   border-radius: 14px;
   display: block;
-  /* We no longer rely on image-orientation; orientation will be detected via
-     JavaScript using the EXIF orientation tag. */
+  /* Respect EXIF orientation when supported to correct sideways photos */
+  image-orientation: from-image;
+}
+
+/* When a polaroid enters the viewport, fade it in and apply its
+   random rotation and translation offsets. The CSS variables
+   --angle, --dx, and --dy are set via JavaScript. */
+.polaroid.visible{
+  opacity: 1;
+  transform: translate(var(--dx, 0), var(--dy, 0)) rotate(var(--angle, 0deg));
+}
+
+/* Orientation-specific rotations applied via JS classes */
+.polaroid img.rotate90{
+  transform: rotate(90deg);
+  width: auto;
+  height: 320px;
+  object-fit: contain;
+  transform-origin: center center;
+}
+.polaroid img.rotate270{
+  transform: rotate(-90deg);
+  width: auto;
+  height: 320px;
+  object-fit: contain;
+  transform-origin: center center;
+}
+.polaroid img.rotate180{
+  transform: rotate(180deg);
 }
 
 /* Landscape images (width > height) need to be rotated so they fit
