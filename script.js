@@ -78,69 +78,13 @@
   const videoEl = document.getElementById('playlistVideo');
   const statsContainer = document.getElementById('statsContainer');
 
-  /**
-   * Reads the EXIF orientation tag from a JPEG file. Returns a Promise that
-   * resolves with an orientation value (1 = default, 3 = 180°, 6 = 90°, 8 = -90°)
-   * or -1 if no orientation tag is found or parsing fails.
-   *
-   * Note: This function only fetches the header portion of the file and
-   * therefore should not significantly impact page load times. If it cannot
-   * determine the orientation, it resolves to -1.
-   *
-   * @param {string} url - The URL of the image to examine.
-   * @returns {Promise<number>}
-   */
-  function getOrientation(url) {
-    return new Promise((resolve, reject) => {
-      fetch(url)
-        .then(response => response.arrayBuffer())
-        .then(buffer => {
-          const view = new DataView(buffer);
-          if (view.getUint16(0, false) !== 0xFFD8) {
-            // Not a JPEG
-            resolve(-1);
-            return;
-          }
-          let offset = 2;
-          const length = view.byteLength;
-          while (offset < length) {
-            const marker = view.getUint16(offset, false);
-            offset += 2;
-            // APP1 marker
-            if (marker === 0xFFE1) {
-              // Check for EXIF header (0x45786966 = 'Exif' in ASCII)
-              if (view.getUint32(offset + 2, false) !== 0x45786966) {
-                // Not EXIF
-                break;
-              }
-              const little = view.getUint16(offset + 8, false) === 0x4949;
-              const exifOffset = offset + 10;
-              const tiffOffset = exifOffset + view.getUint32(exifOffset + 4, little);
-              const tags = view.getUint16(tiffOffset, little);
-              for (let i = 0; i < tags; i++) {
-                const tagOffset = tiffOffset + 2 + i * 12;
-                const tag = view.getUint16(tagOffset, little);
-                if (tag === 0x0112) {
-                  const orientation = view.getUint16(tagOffset + 8, little);
-                  resolve(orientation);
-                  return;
-                }
-              }
-              break;
-            } else if ((marker & 0xFF00) !== 0xFF00) {
-              break;
-            } else {
-              offset += view.getUint16(offset, false);
-            }
-          }
-          resolve(-1);
-        })
-        .catch(err => {
-          // Could not fetch or parse; consider as no orientation tag
-          resolve(-1);
-        });
-    });
-  }
+  // We used to read EXIF metadata to determine orientation. However, remote
+  // images served from GitHub may not reliably expose orientation via
+  // JavaScript due to CORS and caching. Instead, we rely on the browser’s
+  // support for `image-orientation: from-image` and use natural
+  // dimensions to adjust the display sizes of landscape versus portrait
+  // photos. This keeps the gallery simple and avoids gaps beneath
+  // landscape images.
 
   // If none of these exist on the page, nothing to do
   if (!gallery && !videoEl && !statsContainer) return;
@@ -183,58 +127,26 @@
             img.alt = file.name.replace(/\.[^/.]+$/, '').replace(/_/g, ' ');
             img.loading = 'lazy';
 
-            // Detect orientation using EXIF metadata. After the orientation
-            // promise resolves, adjust the image rotation and dimensions
-            // accordingly. We also use a fallback that relies on natural
-            // dimensions if no EXIF orientation is present. This ensures
-            // sideways photos without metadata are corrected.
-            getOrientation(file.download_url).then((orientation) => {
-              const rotateImg = (deg) => {
-                img.style.transform = `rotate(${deg}deg)`;
-                // When rotating 90 or 270 degrees, swap width/height so
-                // the image fits within its polaroid frame without a large
-                // horizontal gap. A fixed height keeps overall sizes
-                // consistent, while width auto allows the rotated image to
-                // scale proportionally.
-                if (deg === 90 || deg === -90) {
-                  img.style.width = 'auto';
-                  img.style.height = '320px';
-                }
-              };
-              switch (orientation) {
-                case 6: // Rotate 90 degrees
-                  rotateImg(90);
-                  break;
-                case 8: // Rotate -90 degrees
-                  rotateImg(-90);
-                  break;
-                case 3: // Rotate 180 degrees
-                  rotateImg(180);
-                  break;
-                default:
-                  // If no orientation tag is found, wait until the image
-                  // has loaded and then examine natural dimensions. If the
-                  // photo is wider than tall (landscape), rotate 90 degrees
-                  // to better fit the vertical polaroid frame. This helps
-                  // address images lacking EXIF orientation data.
-                  img.addEventListener('load', () => {
-                    if (img.naturalWidth > img.naturalHeight) {
-                      rotateImg(90);
-                    }
-                  });
-                  break;
+            // After the image has loaded, determine whether it is landscape
+            // or portrait by comparing natural dimensions. Landscape images
+            // are given a smaller height and fill the width of the card,
+            // while portrait images remain taller with a fixed height. This
+            // prevents a large whitespace area beneath landscape photos and
+            // keeps caption spacing consistent.
+            img.addEventListener('load', () => {
+              const isLandscape = img.naturalWidth > img.naturalHeight;
+              if (isLandscape) {
+                // Landscape: fill the width of the polaroid and crop if
+                // necessary to avoid large empty space. Height is reduced.
+                img.style.width = '100%';
+                img.style.height = '220px';
+                img.style.objectFit = 'cover';
+              } else {
+                // Portrait: maintain max height and allow width to scale
+                img.style.width = 'auto';
+                img.style.height = '320px';
+                img.style.objectFit = 'cover';
               }
-            }).catch(() => {
-              // If orientation detection fails, use natural dimensions as a
-              // fallback. Rotating landscape images improves the fit of
-              // sideways photos.
-              img.addEventListener('load', () => {
-                if (img.naturalWidth > img.naturalHeight) {
-                  img.style.transform = 'rotate(90deg)';
-                  img.style.width = 'auto';
-                  img.style.height = '320px';
-                }
-              });
             });
 
             fig.appendChild(img);

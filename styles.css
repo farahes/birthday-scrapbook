@@ -158,8 +158,13 @@ body{
   width: 100%;
   max-width: 100%;
   height: auto;
-  max-height: 320px;
-  object-fit: contain;
+  /* Height and object-fit will be set dynamically via JavaScript based on
+     whether the photo is landscape or portrait. Landscape photos get
+     shorter heights and use object-fit: cover to crop horizontally,
+     while portrait photos remain taller. */
+  /* max-height removed here to allow JS-defined heights */
+  /* Default to cover; JavaScript will set specific object-fit values */
+  object-fit: cover;
   border-radius: 14px;
   display: block;
   /* Respect EXIF orientation when supported to correct sideways photos */
