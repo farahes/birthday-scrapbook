@@ -92,6 +92,20 @@
       // decorative backgrounds like filmstrip and scrapbook textures.
       if (gallery) {
         const tapes = ['tape--a','tape--b','tape--c'];
+        // Reasons why I love him. These will be cycled through if there are
+        // more images than reasons. Feel free to expand this list in the
+        // future to personalize further.
+        const reasons = [
+          'You always make me laugh until my cheeks hurt.',
+          'You’re my favourite adventure partner.',
+          'You have the kindest heart I know.',
+          'You make ordinary moments feel extraordinary.',
+          'Your smile lights up every room.',
+          'You support and believe in me endlessly.',
+          'You always surprise me with your thoughtfulness.',
+          'You make even the simple things fun.'
+        ];
+        let reasonIndex = 0;
         files.forEach(file => {
           if (/^IMG.*\.(jpe?g|png)$/i.test(file.name)) {
             const fig = document.createElement('figure');
@@ -102,9 +116,20 @@
             img.src = file.download_url;
             img.alt = file.name.replace(/\.[^/.]+$/, '').replace(/_/g, ' ');
             img.loading = 'lazy';
+            // Detect orientation once the image loads. If it is landscape
+            // (width > height) we add a class that rotates it to fit the
+            // portrait polaroid frame.
+            img.addEventListener('load', function() {
+              if (this.naturalWidth > this.naturalHeight) {
+                this.classList.add('landscape');
+              }
+            });
             fig.appendChild(img);
             const cap = document.createElement('figcaption');
-            cap.textContent = img.alt;
+            // Assign a reason for this image. Cycle through if there are
+            // more images than reasons.
+            cap.textContent = reasons[reasonIndex % reasons.length];
+            reasonIndex++;
             fig.appendChild(cap);
             const tapeSpan = document.createElement('span');
             tapeSpan.className = 'tape ' + tapes[Math.floor(Math.random()*tapes.length)];
@@ -141,6 +166,16 @@
         });
         // Kick off the first video
         loadVideo();
+        // Play background music on this page if available. The audio file
+        // should be placed at assets/audio/time_of_our_lives.mp3 as defined
+        // in videos.html. Volume is set low and audio loops automatically.
+        const bgm = document.getElementById('bgm');
+        if (bgm) {
+          bgm.volume = 0.4;
+          // Attempt to play. Modern browsers may block autoplay until user
+          // interacts with the page, so the catch is ignored silently.
+          bgm.play().catch(() => {});
+        }
       }
     });
 

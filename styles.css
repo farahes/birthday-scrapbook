@@ -152,6 +152,17 @@ body{
   border-radius: 14px;
   display: block;
 }
+
+/* Landscape images (width > height) need to be rotated so they fit
+   the vertical polaroid frame. The rotation is applied after the
+   natural dimensions are detected in script.js. */
+.polaroid img.landscape{
+  transform: rotate(90deg);
+  transform-origin: center center;
+  width: auto;
+  height: 320px;
+  object-fit: cover;
+}
 .polaroid figcaption{
   font-family: 'DM Serif Display', serif;
   margin-top: 12px;
