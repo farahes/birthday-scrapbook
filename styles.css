@@ -23,6 +23,31 @@ body{
   background: radial-gradient(1200px 800px at 10% 10%, #fff, var(--bg));
   color: var(--ink);
   overflow-x: hidden;
+  /* The shimmering overlay is created using a pseudo-element on the body.
+     We avoid pointer events so that it does not interfere with clicks.
+     The animation defined below moves a subtle linear gradient across the
+     page to give a sparkle or shiny effect. */
+  position: relative;
+}
+
+/* Shimmer effect overlay across the entire page */
+body::after{
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  /* A diagonal gradient with semi-transparent white stops creates the shimmer */
+  background: linear-gradient(45deg, rgba(255,255,255,0.0) 0%, rgba(255,255,255,0.4) 50%, rgba(255,255,255,0.0) 100%);
+  mix-blend-mode: overlay;
+  opacity: 0.4;
+  background-size: 200% 200%;
+  animation: shimmer 5s linear infinite;
+  z-index: 2;
+}
+
+@keyframes shimmer{
+  from { background-position: 0% 0%; }
+  to { background-position: 100% 100%; }
 }
 
 /* Grain overlay for subtle texture */
