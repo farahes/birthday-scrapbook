@@ -149,8 +149,6 @@ body{
   opacity: 0;
   transform: translateY(30px) rotate(0deg);
   transition: opacity .7s ease-out, transform .7s ease-out;
-  /* Prevent images from bleeding outside the polaroid frame */
-  overflow: hidden;
 }
 .polaroid--tilt{ transform: rotate(1.2deg); }
  .polaroid img{
@@ -166,6 +164,18 @@ body{
   display: block;
   /* Respect EXIF orientation when supported to correct sideways photos */
   image-orientation: from-image;
+}
+
+/* Wrapper around each polaroid image. The wrapper clips any overflow
+   caused by rotation and preserves the rounded corners. It also
+   defines a fixed height for the image area. */
+.polaroid-img-wrapper{
+  width: 100%;
+  height: 320px;
+  max-width: 100%;
+  border-radius: 14px;
+  overflow: hidden;
+  position: relative;
 }
 
 /* When a polaroid enters the viewport, fade it in and apply its

@@ -211,11 +211,14 @@
             for (const code of rotate270List) {
               if (file.name.toLowerCase().includes(code)) {
                 rotateOverride = true;
+                // Rotate 270° (−90°) and scale to fill the wrapper height. Width
+                // is set to auto and height to 100% so the image fits
+                // vertically without overflowing, and maxWidth is unset so
+                // horizontal scaling is governed by height and rotation.
                 img.style.transform = 'rotate(-90deg)';
                 img.style.width = 'auto';
-                img.style.height = '320px';
-                // Ensure rotated images do not exceed the polaroid width
-                img.style.maxWidth = '100%';
+                img.style.height = '100%';
+                img.style.maxWidth = 'none';
                 break;
               }
             }
@@ -238,13 +241,13 @@
                 if (orientation === 6) {
                   img.style.transform = 'rotate(90deg)';
                   img.style.width = 'auto';
-                  img.style.height = '320px';
-                  img.style.maxWidth = '100%';
+                  img.style.height = '100%';
+                  img.style.maxWidth = 'none';
                 } else if (orientation === 8) {
                   img.style.transform = 'rotate(-90deg)';
                   img.style.width = 'auto';
-                  img.style.height = '320px';
-                  img.style.maxWidth = '100%';
+                  img.style.height = '100%';
+                  img.style.maxWidth = 'none';
                 } else if (orientation === 3) {
                   img.style.transform = 'rotate(180deg)';
                 } else {
@@ -255,7 +258,13 @@
               });
             }
 
-            fig.appendChild(img);
+            // Wrap the image in a container that clips overflow so
+            // rotated images do not bleed outside the card. The wrapper
+            // also inherits the border radius via CSS.
+            const imgWrapper = document.createElement('div');
+            imgWrapper.className = 'polaroid-img-wrapper';
+            imgWrapper.appendChild(img);
+            fig.appendChild(imgWrapper);
             const cap = document.createElement('figcaption');
             // Assign a reason for this image. Cycle through if there are
             // more images than reasons.
