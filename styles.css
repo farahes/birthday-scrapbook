@@ -146,9 +146,15 @@ body{
 }
 .polaroid--tilt{ transform: rotate(1.2deg); }
 .polaroid img{
+  /* Display images fully without cropping. Setting height to auto ensures
+     the aspect ratio is preserved and the entire photo is visible. A maximum
+     height keeps the polaroids roughly similar in size while allowing
+     portrait and landscape photos to scale appropriately. */
   width: 100%;
-  height: 320px;
-  object-fit: cover;
+  max-width: 100%;
+  height: auto;
+  max-height: 320px;
+  object-fit: contain;
   border-radius: 14px;
   display: block;
   /* Respect EXIF orientation metadata for all images to ensure they display
