@@ -16,21 +16,11 @@
       <p class="sub">Because some memories are better moving.</p>
     </header>
     <main class="main">
-      <div class="video-grid">
-        <div class="video-frame">
-          <video controls preload="metadata" poster="./assets/img/IMG_0412.JPEG">
-            <source src="./assets/img/IMG_0412.MOV" type="video/mp4">
-            Your browser does not support the video tag.
-          </video>
-          <figcaption>Our orchard giggles</figcaption>
-        </div>
-        <div class="video-frame">
-          <video controls preload="metadata" poster="./assets/img/IMG_0280.JPEG">
-            <source src="./assets/img/IMG_0852.MOV" type="video/mp4">
-            Your browser does not support the video tag.
-          </video>
-          <figcaption>Just us being us</figcaption>
-        </div>
+      <!-- Single video element; playlist will be loaded dynamically via script.js -->
+      <div class="video-wrapper">
+        <video id="playlistVideo" controls preload="metadata" width="100%">
+          Your browser does not support the video tag.
+        </video>
       </div>
       <nav class="nav-links">
         <a class="btn btn--ghost" href="highlights.html">← Back</a>

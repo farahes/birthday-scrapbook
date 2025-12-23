@@ -71,3 +71,102 @@
     if (e.code === "Space") burst();
   });
 })();
+
+// Gallery, playlist and stats builder
+(() => {
+  const gallery = document.getElementById('gallery');
+  const videoEl = document.getElementById('playlistVideo');
+  const statsContainer = document.getElementById('statsContainer');
+
+  // If none of these exist on the page, nothing to do
+  if (!gallery && !videoEl && !statsContainer) return;
+
+  // Fetch asset list from GitHub API. We reference the user's repository directly so
+  // images and videos do not need to be embedded in this repo. GitHub's API sends
+  // CORS headers so it can be safely called from the browser.
+  fetch('https://api.github.com/repos/farahes/birthday-scrapbook/contents/assets/img?ref=main')
+    .then(r => r.json())
+    .then(files => {
+      // Build gallery of photos. Only include actual photo assets – those that
+      // begin with "IMG" and end in jpg, jpeg or png. This filters out
+      // decorative backgrounds like filmstrip and scrapbook textures.
+      if (gallery) {
+        const tapes = ['tape--a','tape--b','tape--c'];
+        files.forEach(file => {
+          if (/^IMG.*\.(jpe?g|png)$/i.test(file.name)) {
+            const fig = document.createElement('figure');
+            fig.className = 'polaroid';
+            const img = document.createElement('img');
+            // Use the raw GitHub download URL so images come straight from
+            // farahes/birthday-scrapbook rather than this repo’s assets folder.
+            img.src = file.download_url;
+            img.alt = file.name.replace(/\.[^/.]+$/, '').replace(/_/g, ' ');
+            img.loading = 'lazy';
+            fig.appendChild(img);
+            const cap = document.createElement('figcaption');
+            cap.textContent = img.alt;
+            fig.appendChild(cap);
+            const tapeSpan = document.createElement('span');
+            tapeSpan.className = 'tape ' + tapes[Math.floor(Math.random()*tapes.length)];
+            fig.appendChild(tapeSpan);
+            gallery.appendChild(fig);
+          }
+        });
+      }
+      // Build video playlist on the video page. We gather all .MOV files and
+      // stream them one after another using a single <video> element. The
+      // source and poster attributes point to the raw GitHub download URLs.
+      if (videoEl) {
+        const videoFiles = files.filter(f => /\.mov$/i.test(f.name));
+        let index = 0;
+        const loadVideo = () => {
+          if (index >= videoFiles.length) return;
+          const fileInfo = videoFiles[index];
+          videoEl.src = fileInfo.download_url;
+          // Provide a poster image if there is a matching JPEG for the current MOV
+          const jpegName = fileInfo.name.replace(/\.MOV/i, '.JPEG');
+          const match = files.find(f => f.name === jpegName);
+          if (match) {
+            videoEl.poster = match.download_url;
+          } else {
+            videoEl.removeAttribute('poster');
+          }
+        };
+        videoEl.addEventListener('ended', () => {
+          index++;
+          if (index < videoFiles.length) {
+            loadVideo();
+            videoEl.play();
+          }
+        });
+        // Kick off the first video
+        loadVideo();
+      }
+    });
+
+  // Build stats cards
+  if (statsContainer) {
+    const stats = [
+      { label: 'Nights spent together', value: 296 },
+      { label: 'Dinners shared', value: 100 },
+      { label: 'Stardew games played', value: 37 },
+      { label: 'Hours of Star Wars watched', value: 25 },
+      { label: 'Crafts made', value: 12 }
+    ];
+    stats.forEach(s => {
+      const card = document.createElement('div');
+      card.className = 'stat-card';
+      card.innerHTML = `<h3>${s.label}</h3><p class="stat-value">${s.value}</p>`;
+      const valEl = card.querySelector('.stat-value');
+      valEl.style.display = 'none';
+      card.addEventListener('click', () => {
+        if (valEl.style.display === 'none') {
+          valEl.style.display = 'block';
+        } else {
+          valEl.style.display = 'none';
+        }
+      });
+      statsContainer.appendChild(card);
+    });
+  }
+})();
