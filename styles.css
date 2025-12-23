@@ -149,6 +149,8 @@ body{
   opacity: 0;
   transform: translateY(30px) rotate(0deg);
   transition: opacity .7s ease-out, transform .7s ease-out;
+  /* Prevent images from bleeding outside the polaroid frame */
+  overflow: hidden;
 }
 .polaroid--tilt{ transform: rotate(1.2deg); }
  .polaroid img{
@@ -205,6 +207,8 @@ body{
   font-family: 'DM Serif Display', serif;
   margin-top: 12px;
   font-size: 20px;
+  /* Center align caption text within the polaroid */
+  text-align: center;
 }
 .tape{
   position:absolute;
