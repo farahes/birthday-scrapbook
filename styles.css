@@ -157,7 +157,8 @@ body{
    the vertical polaroid frame. The rotation is applied after the
    natural dimensions are detected in script.js. */
 .polaroid img.landscape{
-  transform: rotate(90deg);
+  /* Rotate landscape images -90deg so that photos taken horizontally appear upright */
+  transform: rotate(-90deg);
   transform-origin: center center;
   width: auto;
   height: 320px;
