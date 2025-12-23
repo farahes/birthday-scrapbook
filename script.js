@@ -134,17 +134,27 @@
             // prevents a large whitespace area beneath landscape photos and
             // keeps caption spacing consistent.
             img.addEventListener('load', () => {
-              const isLandscape = img.naturalWidth > img.naturalHeight;
-              if (isLandscape) {
-                // Landscape: fill the width of the polaroid and crop if
-                // necessary to avoid large empty space. Height is reduced.
-                img.style.width = '100%';
-                img.style.height = '220px';
+              // If the image is taller than it is wide, it likely contains
+              // sideways faces. Rotate it 90 degrees to a landscape
+              // orientation. After rotation, set a consistent height and
+              // use object-fit: cover so the photo fills its frame without
+              // leaving large gaps. Landscape images remain unrotated but
+              // share the same height.
+              const isPortrait = img.naturalHeight > img.naturalWidth;
+              if (isPortrait) {
+                // Rotate 90 degrees clockwise to make the faces upright
+                img.style.transform = 'rotate(90deg)';
+                // After rotation, swap dimensions: width should be auto
+                // so it scales based on content and height fixed to keep
+                // polaroids uniform.
+                img.style.width = 'auto';
+                img.style.height = '240px';
                 img.style.objectFit = 'cover';
               } else {
-                // Portrait: maintain max height and allow width to scale
-                img.style.width = 'auto';
-                img.style.height = '320px';
+                // Keep landscape images upright. Fill the width of the
+                // polaroid and assign a consistent height.
+                img.style.width = '100%';
+                img.style.height = '240px';
                 img.style.objectFit = 'cover';
               }
             });
