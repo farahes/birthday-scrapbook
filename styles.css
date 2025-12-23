@@ -157,11 +157,8 @@ body{
   object-fit: contain;
   border-radius: 14px;
   display: block;
-  /* Respect EXIF orientation metadata for all images to ensure they display
-     upright without manual rotation. This property is supported in modern
-     browsers and will automatically rotate images based on their EXIF
-     orientation tag. */
-  image-orientation: from-image;
+  /* We no longer rely on image-orientation; orientation will be detected via
+     JavaScript using the EXIF orientation tag. */
 }
 
 /* Landscape images (width > height) need to be rotated so they fit

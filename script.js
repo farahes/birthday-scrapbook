@@ -78,6 +78,70 @@
   const videoEl = document.getElementById('playlistVideo');
   const statsContainer = document.getElementById('statsContainer');
 
+  /**
+   * Reads the EXIF orientation tag from a JPEG file. Returns a Promise that
+   * resolves with an orientation value (1 = default, 3 = 180°, 6 = 90°, 8 = -90°)
+   * or -1 if no orientation tag is found or parsing fails.
+   *
+   * Note: This function only fetches the header portion of the file and
+   * therefore should not significantly impact page load times. If it cannot
+   * determine the orientation, it resolves to -1.
+   *
+   * @param {string} url - The URL of the image to examine.
+   * @returns {Promise<number>}
+   */
+  function getOrientation(url) {
+    return new Promise((resolve, reject) => {
+      fetch(url)
+        .then(response => response.arrayBuffer())
+        .then(buffer => {
+          const view = new DataView(buffer);
+          if (view.getUint16(0, false) !== 0xFFD8) {
+            // Not a JPEG
+            resolve(-1);
+            return;
+          }
+          let offset = 2;
+          const length = view.byteLength;
+          while (offset < length) {
+            const marker = view.getUint16(offset, false);
+            offset += 2;
+            // APP1 marker
+            if (marker === 0xFFE1) {
+              // Check for EXIF header (0x45786966 = 'Exif' in ASCII)
+              if (view.getUint32(offset + 2, false) !== 0x45786966) {
+                // Not EXIF
+                break;
+              }
+              const little = view.getUint16(offset + 8, false) === 0x4949;
+              const exifOffset = offset + 10;
+              const tiffOffset = exifOffset + view.getUint32(exifOffset + 4, little);
+              const tags = view.getUint16(tiffOffset, little);
+              for (let i = 0; i < tags; i++) {
+                const tagOffset = tiffOffset + 2 + i * 12;
+                const tag = view.getUint16(tagOffset, little);
+                if (tag === 0x0112) {
+                  const orientation = view.getUint16(tagOffset + 8, little);
+                  resolve(orientation);
+                  return;
+                }
+              }
+              break;
+            } else if ((marker & 0xFF00) !== 0xFF00) {
+              break;
+            } else {
+              offset += view.getUint16(offset, false);
+            }
+          }
+          resolve(-1);
+        })
+        .catch(err => {
+          // Could not fetch or parse; consider as no orientation tag
+          resolve(-1);
+        });
+    });
+  }
+
   // If none of these exist on the page, nothing to do
   if (!gallery && !videoEl && !statsContainer) return;
 
@@ -116,13 +180,28 @@
             img.src = file.download_url;
             img.alt = file.name.replace(/\.[^/.]+$/, '').replace(/_/g, ' ');
             img.loading = 'lazy';
-            // Detect orientation once the image loads. If it is landscape
-            // (width > height) we add a class that rotates it to fit the
-            // portrait polaroid frame.
-            img.addEventListener('load', function() {
-              if (this.naturalWidth > this.naturalHeight) {
-                this.classList.add('landscape');
+            // Detect orientation using EXIF metadata. We fetch the JPEG
+            // header to read the orientation and then apply a CSS rotation
+            // if needed. This ensures images are displayed upright and
+            // correctly oriented regardless of device metadata.
+            getOrientation(file.download_url).then((orientation) => {
+              switch (orientation) {
+                case 6: // Rotate 90 degrees
+                  img.style.transform = 'rotate(90deg)';
+                  break;
+                case 8: // Rotate -90 degrees
+                  img.style.transform = 'rotate(-90deg)';
+                  break;
+                case 3: // Rotate 180 degrees
+                  img.style.transform = 'rotate(180deg)';
+                  break;
+                default:
+                  // No rotation needed
+                  break;
               }
+            }).catch(() => {
+              // If orientation detection fails, we do nothing and display
+              // the image as-is.
             });
             fig.appendChild(img);
             const cap = document.createElement('figcaption');
@@ -166,26 +245,34 @@
         });
         // Kick off the first video
         loadVideo();
+        // Ensure the video is muted by default to avoid overlapping audio with
+        // the background music. This also satisfies autoplay policies in
+        // modern browsers.
+        videoEl.muted = true;
         // Play background music on this page if available. The audio file
         // should be placed at assets/audio/time_of_our_lives.mp3 as defined
         // in videos.html. Volume is set low and audio loops automatically.
         const bgm = document.getElementById('bgm');
         if (bgm) {
           bgm.volume = 0.4;
-          // Set the audio to start 20 seconds in once metadata is loaded. This
-          // ensures we only seek after the duration is known.
-          bgm.addEventListener('loadedmetadata', () => {
+          // Start the audio at 40 seconds. We wait until metadata is loaded so
+          // that the duration is known, then seek and play. If metadata is
+          // already loaded, we can immediately seek and play.
+          const startAudio = () => {
             try {
               if (bgm.duration && bgm.duration > 40) {
                 bgm.currentTime = 40;
               }
             } catch (e) {
-              // Seeking can fail if the media isn't ready; ignore errors.
+              // ignore seeking errors
             }
-          });
-          // Attempt to play. Modern browsers may block autoplay until user
-          // interacts with the page, so the catch is ignored silently.
-          bgm.play().catch(() => {});
+            bgm.play().catch(() => {});
+          };
+          if (bgm.readyState >= 1) {
+            startAudio();
+          } else {
+            bgm.addEventListener('loadedmetadata', startAudio, { once: true });
+          }
         }
       }
     });
