@@ -18,19 +18,11 @@
     <main class="main">
       <div class="envelope-container">
         <!-- Clicking the envelope will trigger the open animation -->
-        <div class="envelope" tabindex="0" role="button" aria-label="Open envelope">
+        <div class="envelope" tabindex="0" role="button" aria-label="Open envelope" onclick="this.classList.add('open')">
           <div class="letter-content">
-            <!-- A simple silhouette illustration representing a leader and partner -->
-            <svg width="240" height="180" viewBox="0 0 240 180" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-              <rect width="240" height="180" fill="#fff6ec" />
-              <!-- Leader silhouette -->
-              <circle cx="70" cy="60" r="32" fill="#4b5563" />
-              <rect x="46" y="92" width="48" height="70" fill="#4b5563" />
-              <!-- Partner silhouette -->
-              <circle cx="170" cy="60" r="28" fill="#6b7280" />
-              <rect x="146" y="92" width="48" height="70" fill="#6b7280" />
-            </svg>
-            <p class="future-message">Your future is bright — a leader with me by your side.</p>
+            <!-- Reveal our future photo and message -->
+            <img src="./assets/img/farah_and_chad.jpeg" alt="Our future together" style="max-width: 100%; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.15);" />
+            <p class="future-message">I wish us infinite more birthdays and success together.</p>
           </div>
         </div>
       </div>
@@ -45,17 +37,29 @@
     <canvas id="confetti" class="confetti" aria-hidden="true"></canvas>
     <script src="./script.js"></script>
     <script>
-      // Handle envelope open animation on click or keypress (Enter/Space)
-      const env = document.querySelector('.envelope');
-      function openEnvelope() {
-        if (!env.classList.contains('open')) env.classList.add('open');
-      }
-      env.addEventListener('click', openEnvelope);
-      env.addEventListener('keydown', (e) => {
-        if (e.code === 'Enter' || e.code === 'Space') {
-          openEnvelope();
-          e.preventDefault();
+      // Handle envelope open animation when the DOM is ready. We attach
+      // listeners after the envelope element exists to ensure they are
+      // effective. The envelope will reveal its contents and rotate
+      // the flap when clicked or when the user presses Enter/Space on it.
+      document.addEventListener('DOMContentLoaded', () => {
+        const env = document.querySelector('.envelope');
+        if (!env) return;
+        function openEnvelope() {
+          if (!env.classList.contains('open')) env.classList.add('open');
+          // Trigger confetti fireworks by simulating a Space key press.
+          try {
+            window.dispatchEvent(new KeyboardEvent('keydown', {code: 'Space'}));
+          } catch (e) {
+            // ignore errors
+          }
         }
+        env.addEventListener('click', openEnvelope);
+        env.addEventListener('keydown', (e) => {
+          if (e.code === 'Enter' || e.code === 'Space') {
+            openEnvelope();
+            e.preventDefault();
+          }
+        });
       });
     </script>
   </body>
