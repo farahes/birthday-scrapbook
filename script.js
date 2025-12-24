@@ -1,4 +1,3 @@
-// Confetti effect reused from the original site
 (() => {
   const canvas = document.getElementById("confetti");
   if (!canvas) return;
