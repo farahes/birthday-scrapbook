@@ -183,7 +183,48 @@
           'Your smile lights up every room.',
           'You support and believe in me endlessly.',
           'You always surprise me with your thoughtfulness.',
-          'You make even the simple things fun.'
+          'You make even the simple things fun.',
+          'You feel like home to me',
+          'You listen with real care', 
+          'You make me feel safe', 
+          'You encourage me to dream bigger',
+          'You’re patient and understanding',
+          'You show up every time',
+          'You’re incredibly driven and focused',
+          'You inspire me without trying',
+          'You’re gentle and strong',
+          'You make me feel chosen',
+          'You bring peace into my life',
+          'You’re my favorite person to talk to',
+          'You make silence comfortable',
+          'You celebrate my wins genuinely',
+          'You care deeply about what matters',
+          'You make me feel understood',
+          'You love in quiet and small ways that mean everything to me',
+          'You put your whole heart in',
+          'You make me feel lucky daily',
+          'You’re endlessly curious and creative',
+          'You challenge me in the best ways',
+          'You’re honest and genuine',
+          'You make me feel seen',
+          'You’re steady and reliable',
+          'You care about the little details',
+          'You make life feel lighter',
+          'You choose love every day',
+          'You’re my comfort person',
+          'You make me feel at ease',
+          'You’re thoughtful without being asked',
+          'You make time for us',
+          'You’re so strong',
+          'You make me feel deeply loved',
+          'You turn bad days around',
+          'You make the future exciting',
+          'You feel like forever to me',
+          'You love me wholeheartedly',
+          'You’re you and that’s everything',
+          'You’re the best farmer I know -- farmer chad', 
+          'I admire how you always figure it out'
+          
         ];
         let reasonIndex = 0;
         files.forEach(file => {
@@ -404,10 +445,10 @@
   // Build stats cards
   if (statsContainer) {
     const stats = [
-      { label: 'Nights spent together', value: 296 },
-      { label: 'Dinners shared', value: 100 },
-      { label: 'Stardew games played', value: 37 },
-      { label: 'Hours of Star Wars watched', value: 25 },
+      { label: 'Nights spent together', value: '~296' },
+      { label: 'Dinners shared', value: 148 },
+      { label: 'Stardew hours played', value: '50+' },
+      { label: 'Hours of Star Wars Watched', value: 64 },
       { label: 'Crafts made', value: 12 },
       { label: 'Love for you', value: '∞' }
     ];
