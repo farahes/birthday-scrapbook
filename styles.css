@@ -468,8 +468,9 @@ body::after{
 }
 .envelope{
   position: relative;
-  width: 300px;
-  height: 260px;
+  /* Enlarge the envelope so that the photo and message can display without cropping */
+  width: 340px;
+  height: 340px;
   /* Light beige envelope body */
   background: #fff7e4;
   border: 2px solid rgba(0,0,0,0.1);
@@ -515,4 +516,15 @@ body::after{
   font-size: 20px;
   text-align: center;
   color: var(--ink);
+}
+
+/* Style for the future page photo inside the envelope. Use contain to show
+   the whole image without cropping and scale it to fit within the card. */
+.future-photo{
+  width: 100%;
+  height: auto;
+  max-height: 200px;
+  object-fit: contain;
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.15);
 }
