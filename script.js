@@ -1,3 +1,4 @@
+// Confetti effect reused from the original site
 (() => {
   const canvas = document.getElementById("confetti");
   if (!canvas) return;
@@ -171,9 +172,9 @@
       // decorative backgrounds like filmstrip and scrapbook textures.
       if (gallery) {
         const tapes = ['tape--a','tape--b','tape--c'];
-        // Reasons why I love him. These will be cycled through if there are
-        // more images than reasons. Feel free to expand this list in the
-        // future to personalize further.
+        // Reasons why I love him. Each caption will be used once per page load
+        // before repeating. Feel free to expand this list in the future to
+        // personalize further.
         const reasons = [
           'You always make me laugh until my cheeks hurt.',
           'You’re my favourite adventure partner.',
@@ -184,8 +185,8 @@
           'You always surprise me with your thoughtfulness.',
           'You make even the simple things fun.',
           'You feel like home to me',
-          'You listen with real care', 
-          'You make me feel safe', 
+          'You listen with real care',
+          'You make me feel safe',
           'You encourage me to dream bigger',
           'You’re patient and understanding',
           'You show up every time',
@@ -221,11 +222,11 @@
           'You feel like forever to me',
           'You love me wholeheartedly',
           'You’re you and that’s everything',
-          'You’re the best farmer I know -- farmer chad', 
+          'You’re the best farmer I know -- farmer chad',
           'I admire how you always figure it out'
-          
         ];
-        let reasonIndex = 0;
+        // Create a mutable pool of reasons so each caption is used only once
+        let reasonPool = [...reasons];
         files.forEach(file => {
           // Only consider image assets that begin with "IMG". Exclude decorative
           // background files like filmstrip and textures.
@@ -300,10 +301,14 @@
             imgWrapper.appendChild(img);
             fig.appendChild(imgWrapper);
             const cap = document.createElement('figcaption');
-            // Assign a reason for this image. Cycle through if there are
-            // more images than reasons.
-            cap.textContent = reasons[reasonIndex % reasons.length];
-            reasonIndex++;
+            // Assign a reason for this image. Pull from the pool so
+            // each reason is used once before any repeats. When the pool
+            // becomes empty, repopulate it from the full list.
+            if (reasonPool.length === 0) {
+              reasonPool = [...reasons];
+            }
+            const caption = reasonPool.shift();
+            cap.textContent = caption || '';
             fig.appendChild(cap);
             const tapeSpan = document.createElement('span');
             tapeSpan.className = 'tape ' + tapes[Math.floor(Math.random()*tapes.length)];
